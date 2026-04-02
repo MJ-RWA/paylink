@@ -1,0 +1,5 @@
+{
+  "name": "PayLink",
+  "description": "A Linktree-style crypto payment portal for Starknet, featuring social logins and gasless transactions via StarkZap SDK.",
+  "requestFramePermissions": []
+}
