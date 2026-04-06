@@ -1,72 +1,106 @@
-import { usePaymentStore, useUIStore } from './useStore';
+import { usePaymentStore } from './useStore';
 import { useAuth } from './useAuth';
-import { starkzap } from '../services/starkzapService';
+import { Amount, sepoliaTokens } from 'starkzap';
+
+const STRK = sepoliaTokens.STRK;
+const USDC = sepoliaTokens.USDC;
+const RECIPIENT_ADDRESS = "0x0251366E37314e144d03176c3279F9bbCe7B12aF06D7aBFB925679265C5C4EBc";
 
 export function usePaymentFlow() {
-  const { 
-    amount, setAmount, 
-    step, setStep, 
-    isLoading, setIsLoading, 
-    balance, setBalance 
+  const {
+    amount, setAmount,
+    step, setStep,
+    isLoading, setIsLoading,
+    balance, setBalance,
   } = usePaymentStore();
-  const { setActiveModal, setPendingAction } = useUIStore();
-  const { isLoggedIn } = useAuth();
+
+  const { authenticated, wallet, login } = useAuth();
+
+  const startPayment = async () => {
+    setIsLoading(true);
+
+    try {
+      let activeWallet = wallet;
+
+      if (!authenticated || !activeWallet) {
+        const result = await login();
+        if (!result || !result.walletInstance) {
+          setIsLoading(false);
+          return;
+        }
+        activeWallet = result.walletInstance;
+      }
+
+      setStep('processing');
+
+      // Check STRK gas balance — if zero, tell user to wait and retry
+      
+      const gasBalance = await activeWallet.balanceOf(STRK);
+      const gasAmount = Number(gasBalance.toUnit());
+      console.log('[payment] STRK gas unit:', gasBalance.toUnit());
+      console.log('[payment] STRK gas balance:', gasAmount);
+
+      if (!Number.isFinite(gasAmount) || gasAmount === 0) {
+        // Gas was sent by server but hasn't confirmed yet
+        // Show a friendly waiting state instead of throwing
+        setStep('waiting_for_gas');
+        setIsLoading(false);
+        return;
+      }
+
+      // Check USDC balance
+      const balanceData = await activeWallet.balanceOf(USDC);
+      const balanceAmount = Number(balanceData.toUnit());
+      setBalance(balanceAmount);
+      console.log('[payment] USDC balance:', balanceAmount);
+
+      if (Number.isNaN(balanceAmount) || balanceAmount < Number(amount)) {
+        setStep('insufficient_funds');
+        setIsLoading(false);
+        return;
+      }
+
+      
+      await activeWallet.ensureReady({ deploy: 'if_needed' });
+
+      const tx = await activeWallet.transfer(
+        USDC,
+        [{ to: RECIPIENT_ADDRESS, amount: Amount.parse(amount, USDC) }],
+        { feeMode: 'user_pays' }
+      );
+
+      await tx.wait();
+      setStep('success');
+
+    } catch (error: any) {
+      console.error('Payment Flow Error:', error);
+
+      // Specific error for gas/balance issues — tell user to retry
+      if (
+        error?.message?.includes('balance') ||
+        error?.message?.includes('Resources bounds') ||
+        error?.message?.includes('funds')
+      ) {
+        setStep('waiting_for_gas');
+      } else {
+        setStep('amount');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInitialPay = async () => {
-    if (!isLoggedIn) {
-      setPendingAction('pay');
-      setActiveModal('auth');
-      return;
-    }
-
-    setIsLoading(true);
-    
-    // Check balance after login
-    const currentBalance = await starkzap.getBalance('USDC');
-    setBalance(currentBalance);
-    
-    // For demo purposes, if amount > 1000, simulate insufficient funds
-    if (parseFloat(amount) > 1000) {
-      setStep('insufficient_funds');
-      setIsLoading(false);
-    } else {
-      await handleFinalPayment();
-    }
-  };
-
-  const handleFinalPayment = async () => {
-    setStep('processing');
-    setIsLoading(true);
-    
-    const result = await starkzap.sendPayment({
-      recipient: '@mekjah',
-      amount: parseFloat(amount),
-      asset: 'USDC'
-    });
-
-    setIsLoading(false);
-    if (result.success) {
-      setStep('success');
-    } else {
-      setStep('amount');
-    }
-  };
-
-  const reset = () => {
-    setStep('amount');
-    setAmount('');
+    await startPayment();
   };
 
   return {
-    amount,
-    setAmount,
-    step,
-    setStep,
+    amount, setAmount,
+    step, setStep,
     isLoading,
+    startPayment,
     handleInitialPay,
-    handleFinalPayment,
-    reset,
-    isLoggedIn,
-    balance
+    isLoggedIn: authenticated,
+    balance,
   };
 }

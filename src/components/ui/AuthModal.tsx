@@ -27,13 +27,13 @@ export default function AuthModal({
     setIsLoading(true);
     setError(null);
     try {
-      const user = await login();
-      if (user) {
-        onSuccess?.();
-        onClose();
-      } else {
-        setError("Login failed. Please try again.");
-      }
+     const result = await login();
+     if (result?.address) {
+     onSuccess?.();
+     onClose();
+     } else {
+     setError("Could not create your secure wallet. Please try again.");
+    } 
     } catch (err) {
       setError("An unexpected error occurred.");
       console.error(err);

@@ -6,7 +6,7 @@ interface AuthState {
   setAuth: (isLoggedIn: boolean, user: any | null) => void;
 }
 
-export type PaymentStep = 'amount' | 'processing' | 'success' | 'insufficient_funds';
+export type PaymentStep = 'amount' | 'processing' | 'success' | 'insufficient_funds' | 'waiting_for_gas';
 
 interface PaymentState {
   amount: string;

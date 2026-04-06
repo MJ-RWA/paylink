@@ -2,12 +2,14 @@ import { motion } from 'motion/react';
 import { ReactNode } from 'react';
 import { cn } from '../../lib/utils';
 
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
+
 interface ButtonProps {
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
   isLoading?: boolean;
   disabled?: boolean;
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: ButtonVariant;
   className?: string;
   type?: 'button' | 'submit' | 'reset';
 }
@@ -21,7 +23,7 @@ export default function Button({
   className,
   type = 'button'
 }: ButtonProps) {
-  const variants = {
+  const variants: Record<ButtonVariant, string> = {
     primary: 'bg-teal-600 text-white shadow-lg shadow-teal-200 hover:bg-teal-700',
     secondary: 'bg-teal-50 text-teal-600 hover:bg-teal-100',
     outline: 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50',
