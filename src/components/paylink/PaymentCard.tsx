@@ -11,11 +11,15 @@ export default function PaymentCard() {
     step, 
     setStep, 
     isLoading, 
-    handleInitialPay, 
-    reset,
+    startPayment,
     isLoggedIn,
     balance
   } = usePaymentFlow();
+
+  // Ensure balance is treated as a string, then parsed, then formatted back to a string
+const displayBalance: string = balance 
+  ? parseFloat(balance.toString()).toFixed(2) 
+  : '0.00';
 
   if (step === 'success') {
     return (
@@ -28,12 +32,13 @@ export default function PaymentCard() {
         <h2 className="text-2xl font-bold text-gray-900">Payment Successful!</h2>
         <p className="text-gray-500">Your payment of ${amount} has been sent to @mekjah.</p>
         <div className="pt-2 text-xs text-gray-400">No extra fees • Instant payment</div>
-        <button
-          onClick={reset}
-          className="text-teal-600 font-medium hover:underline"
-        >
+       <Button 
+      onClick={() => { window.open('https://ramp.network', '_blank'); }} 
+      variant="secondary" 
+      className="flex items-center justify-center space-x-2 w-full"
+>
           Send another payment
-        </button>
+        </Button>
       </Card>
     );
   }
@@ -60,12 +65,16 @@ export default function PaymentCard() {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Your Balance:</span>
-            <span className="font-bold text-red-500">${balance?.toFixed(2) || '0.00'} USDC</span>
+            <span className="font-bold text-red-500">${displayBalance} USDC</span>
           </div>
         </div>
 
         <div className="space-y-3">
-          <Button onClick={() => window.open('https://ramp.network', '_blank')} variant="outline" className="flex items-center justify-center space-x-2">
+          <Button 
+            onClick={() => window.open('https://ramp.network', '_blank')} 
+            variant="outline" 
+            className="flex items-center justify-center space-x-2 w-full"
+          >
             <span>Top up with Crypto</span>
             <ExternalLink className="w-4 h-4" />
           </Button>
@@ -93,7 +102,7 @@ export default function PaymentCard() {
 
           <div className="pt-4">
             <Button
-              onClick={handleInitialPay}
+              onClick={startPayment}
               isLoading={isLoading}
               disabled={!amount || parseFloat(amount) <= 0}
             >
@@ -101,7 +110,6 @@ export default function PaymentCard() {
             </Button>
           </div>
 
-          {/* Roadmap Features */}
           <div className="pt-6 border-t border-gray-100">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Coming Soon</p>
             <div className="grid grid-cols-2 gap-3">
@@ -127,6 +135,21 @@ export default function PaymentCard() {
           </div>
         </div>
       )}
+{step === 'waiting_for_gas' && (
+  <div className="text-center p-4">
+    <p className="text-amber-600 font-medium">Almost ready</p>
+    <p className="text-sm text-gray-500 mt-1">
+      Your wallet is being set up. Please wait 30 seconds and try again.
+    </p>
+    <button
+      onClick={() => setStep('amount')}
+      className="mt-4 px-6 py-2 bg-teal-500 text-white rounded-lg"
+    >
+      Try again
+    </button>
+  </div>
+)}
+
 
       <div className="flex flex-col items-center space-y-2 pt-2">
         <div className="flex items-center justify-center space-x-2 text-xs text-gray-400">
