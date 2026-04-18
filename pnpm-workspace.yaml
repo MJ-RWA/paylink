@@ -1,8 +1,12 @@
-allowBuilds:
-  '@reown/appkit': false
-  bufferutil: false
-  cbor-extract: false
-  esbuild: false
-  keccak: false
-  protobufjs: false
-  utf-8-validate: false
+packages:
+  - 'packages/*'
+
+pnpm:
+  onlyBuiltDependencies:
+    - '@reown/appkit'
+    - 'bufferutil'
+    - 'cbor-extract'
+    - 'esbuild'
+    - 'keccak'
+    - 'protobufjs'
+    - 'utf-8-validate'
