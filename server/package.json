@@ -1,0 +1,16 @@
+{
+  "name": "paylink-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@privy-io/server-auth": "latest",
+    "cors": "latest",
+    "dotenv": "latest",
+    "express": "latest",
+    "starknet": "^9.4.2"
+  }
+}
