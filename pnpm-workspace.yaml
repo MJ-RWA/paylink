@@ -1,8 +1,3 @@
-packages:
-  - 'packages/*'
-allowBuilds:
-  '@reown/appkit': false
-
 pnpm:
   onlyBuiltDependencies:
     - '@reown/appkit'
