@@ -1,0 +1,46 @@
+{
+  "name": "paylink-sdk",
+  "version": "0.1.0",
+  "description": "Drop-in Web2-style crypto payment components for Starknet",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+   "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+     "build": "tsup src/index.ts --format cjs,esm --dts --external react --external @hyperlane-xyz/sdk --external @hyperlane-xyz/registry --external @hyperlane-xyz/utils",
+     "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "zustand": ">=4",
+    "starknet": ">=8",
+    "@privy-io/react-auth": ">=1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.8.3"
+  },
+  "keywords": [
+    "starknet",
+    "payments",
+    "web3",
+    "react",
+    "starkzap"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MJ-RWA/paylink"
+  }
+}
