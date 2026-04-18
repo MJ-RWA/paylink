@@ -2,19 +2,19 @@ import { usePrivy } from '@privy-io/react-auth';
 import { StarkZap, OnboardStrategy, StarkSigner } from 'starkzap';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ec } from 'starknet';
+import { usePaymentStore } from './useStore';
 
-// Module-level singleton — shared across ALL components that call useAuth()
-// This is the key fix for the loop: one instance, one onboard attempt
+// Module-level singleton
 const sdk = new StarkZap({
   network: import.meta.env.VITE_NETWORK === 'mainnet' ? 'mainnet' : 'sepolia',
 });
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:3001';
 
-// Shared wallet state at module level — persists across re-renders and components
+// Shared wallet state at module level
 let sharedWallet: any = null;
 let sharedAddress: string | null = null;
-let isOnboarding = false;  // Single flag for the entire app, not per-component
+let isOnboarding = false;
 
 export function useAuth() {
   const {
@@ -22,76 +22,107 @@ export function useAuth() {
     logout: privyLogout,
     authenticated,
     ready,
+    user,
     getAccessToken,
   } = usePrivy();
 
-  // Local state for triggering re-renders when shared state changes
   const [wallet, setWallet] = useState<any>(sharedWallet);
   const [starknetAddress, setStarknetAddress] = useState<string | null>(sharedAddress);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { clearTransactions } = usePaymentStore.getState();
+  
   const getAccessTokenRef = useRef(getAccessToken);
   useEffect(() => {
     getAccessTokenRef.current = getAccessToken;
   });
 
   const onboardWithSigner = useCallback(async () => {
-    const token = await getAccessTokenRef.current();
-    if (!token) throw new Error('No auth token');
+  const token = await getAccessTokenRef.current();
+  
+  if (!token) {
+    console.warn('[onboard] No token yet, skipping...');
+    throw new Error('AUTH_NOT_READY'); // 👈 important distinction
+  }
 
-    console.log('[onboard] Fetching wallet key from server...');
-    const response = await fetch(`${SERVER_URL}/api/wallet/get-or-create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    });
+  // STEP 1: Get private key ONLY
+  console.log('[onboard] Fetching private key from server...');
+  const response = await fetch(`${SERVER_URL}/api/wallet/get-or-create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }), // ✅ ONLY TOKEN HERE
+  });
 
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error ?? 'Failed to get wallet key');
-    }
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error ?? 'Failed to get wallet key');
+  }
 
-    const { privateKey } = await response.json();
-    console.log('[onboard] Got key, creating signer...');
+  const { privateKey } = await response.json();
 
-    const hexKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
-    const validStarkKey = ec.starkCurve.grindKey(hexKey);
+  // STEP 2: Create wallet (SOURCE OF TRUTH)
+  const hexKey = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
+  const validStarkKey = ec.starkCurve.grindKey(hexKey);
 
-    const { wallet: connectedWallet } = await sdk.onboard({
-      strategy: OnboardStrategy.Signer,
-      account: { signer: new StarkSigner(validStarkKey) },
-      deploy: 'never',
-    });
+  const { wallet: connectedWallet } = await sdk.onboard({
+    strategy: OnboardStrategy.Signer,
+    account: { signer: new StarkSigner(validStarkKey) },
+    deploy: 'never',
+  });
 
-    console.log('[onboard] Success. Address:', connectedWallet.address);
-    return connectedWallet;
-  }, []);
+  console.log('[onboard] Wallet address (SOURCE OF TRUTH):', connectedWallet.address);
+
+  // STEP 3: Send REAL address back to backend
+  await fetch(`${SERVER_URL}/api/wallet/get-or-create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token,
+      address: connectedWallet.address, // ✅ THIS FIXES EVERYTHING
+    }),
+  });
+
+  // STEP 4: Save to Zustand
+  const { setWalletAddress } = usePaymentStore.getState();
+  setWalletAddress(connectedWallet.address);
+
+  return connectedWallet;
+}, []);
 
   useEffect(() => {
-    
     if (!ready || !authenticated || sharedWallet || isOnboarding) return;
-
+   if (!getAccessTokenRef.current) return;
     isOnboarding = true;
 
     const run = async () => {
-      try {
-        const connectedWallet = await onboardWithSigner();
-        // Update module-level shared state
-        sharedWallet = connectedWallet;
-        sharedAddress = connectedWallet.address;
-        // Update local React state to trigger re-renders in all consumers
-        setWallet(connectedWallet);
-        setStarknetAddress(connectedWallet.address);
-      } catch (err) {
-        console.error('[auto-onboard] Failed:', err);
-        isOnboarding = false;
-      }
-    };
+  try {
+    const connectedWallet = await onboardWithSigner();
+
+    sharedWallet = connectedWallet;
+    sharedAddress = connectedWallet.address;
+
+    setWallet(connectedWallet);
+    setStarknetAddress(connectedWallet.address);
+
+    const { setWalletAddress } = usePaymentStore.getState();
+    setWalletAddress(connectedWallet.address);
+
+  } catch (err: any) {
+    if (err.message === 'AUTH_NOT_READY') {
+      console.log('[auto-onboard] Waiting for token...');
+      isOnboarding = false;
+
+      setTimeout(run, 500);
+      return;
+    }
+
+    console.error('[auto-onboard] Failed:', err);
+    isOnboarding = false;
+  }
+};
 
     run();
   }, [ready, authenticated, onboardWithSigner]);
- 
 
   const login = async () => {
     setIsLoading(true);
@@ -103,9 +134,11 @@ export function useAuth() {
         setIsLoading(false);
         return null;
       }
-
       
       if (sharedWallet) {
+        const { setWalletAddress } = usePaymentStore.getState();
+        setWalletAddress(sharedWallet.address);
+        
         setIsLoading(false);
         return {
           address: sharedWallet.address,
@@ -119,6 +152,8 @@ export function useAuth() {
       sharedAddress = connectedWallet.address;
       setWallet(connectedWallet);
       setStarknetAddress(connectedWallet.address);
+      const { setWalletAddress } = usePaymentStore.getState();
+      setWalletAddress(connectedWallet.address);
 
       return {
         address: connectedWallet.address,
@@ -143,6 +178,9 @@ export function useAuth() {
     setWallet(null);
     setStarknetAddress(null);
     setError(null);
+    const { setWalletAddress } = usePaymentStore.getState();
+    setWalletAddress(null);
+    clearTransactions();
   };
 
   return {
@@ -150,9 +188,11 @@ export function useAuth() {
     logout,
     wallet,
     authenticated,
-    starknetAddress,
     ready,
     isLoading,
     error,
+    user,
+    starknetAddress: starknetAddress || user?.wallet?.address || null,
+    getAccessToken,
   };
 }
