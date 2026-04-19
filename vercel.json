@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter=!server build",
+  "buildCommand": "pnpm install --no-frozen-lockfile && pnpm --filter paylink-web build",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "outputDirectory": "dist"
+  "outputDirectory": "apps/web/dist"
 }
