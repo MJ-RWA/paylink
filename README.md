@@ -4,7 +4,7 @@ PayLink is an open-source payment link system built on Starknet. It lets anyone
 send and receive USDC via a shareable link — no wallets, no seed phrases, no 
 crypto knowledge required.
 
-> **Live Demo:** [paylink.vercel.app](https://paylink.vercel.app)  
+> **Live Demo:** [paylink001.vercel.app](https://paylink001.vercel.app)  
 > **Network:** Starknet Sepolia Testnet  
 > **Contract:** [0x0585589...](https://sepolia.starkscan.co/contract/0x0585589db8cdfee93349d5f7cabf7db8ce3d557c93b1c91cb201e0120672b822)  
 > **SDK:** [npmjs.com/package/paylink-sdk](https://www.npmjs.com/package/paylink-sdk)
@@ -20,7 +20,7 @@ it can send USDC in under 60 seconds — no wallet setup, no crypto jargon.
 **Creator flow:**
 1. Sign in with Google → wallet created silently via Privy + StarkZap
 2. Claim a username → registered on-chain via Cairo contract
-3. Share `paylink.app/username` anywhere
+3. Share `paylink001.vercel.app/username` anywhere
 4. Dashboard shows live balance and transaction history
 
 **Payer flow:**
@@ -30,6 +30,52 @@ it can send USDC in under 60 seconds — no wallet setup, no crypto jargon.
 4. Done — never saw a seed phrase or gas fee
 
 ---
+
+## The Problem PayLink Solves
+
+### Before PayLink — what crypto payments actually look like today
+
+A freelancer wants to accept crypto payment from a client. Here is what happens:
+
+1. Client downloads MetaMask or Braavos wallet browser extension
+2. Client creates an account — writes down a 12-word seed phrase
+3. Client buys USDC on a centralised exchange (Coinbase, Binance)
+4. Client waits 1-3 days for identity verification to clear
+5. Client bridges funds to Starknet — pays bridge fees, waits 10 minutes
+6. Client acquires STRK separately to pay gas fees
+7. Client copies the freelancer's 66-character hex wallet address
+8. Client submits transaction — signs a hex string they don't understand
+9. Transaction fails because gas estimate was wrong
+10. Client gives up
+
+**Result:** Payment never sent. Freelancer loses the client.
+
+---
+
+### After PayLink — the same payment
+
+1. Freelancer shares `paylink.app/mekjah`
+2. Client visits the link
+3. Client clicks Pay, signs in with Google
+4. Client funds their wallet with a card (MoonPay)
+5. Client clicks Confirm
+6. Done
+
+**Result:** Payment sent in under 60 seconds.
+No seed phrases. No bridge. No gas management. No wallet downloads.
+The client never knew they were using a blockchain.
+
+---
+
+### What changed under the hood
+
+| Step | Web2 experience | What actually happened |
+|---|---|---|
+| Sign in with Google | Familiar OAuth flow | Privy created an embedded wallet |
+| Wallet created automatically | User saw nothing | StarkZap derived a Starknet account |
+| No gas fee prompt | User paid nothing extra | Server prefunded wallet with STRK |
+| Payment confirmed | Success screen | Real USDC transfer on Starknet Sepolia |
+| Link like paylink.app/mekjah | Simple URL | Username resolved from Cairo contract on-chain |
 
 ## Features
 
@@ -75,35 +121,98 @@ it can send USDC in under 60 seconds — no wallet setup, no crypto jargon.
 
 ## Project Structure
 paylink/
-├── src/
-│   ├── components/
-│   │   ├── paylink/
-│   │   │   ├── PaymentCard.tsx      # Core payment UI
-│   │   │   ├── ProfileHeader.tsx    # Payment page header
-│   │   │   ├── DashboardCard.tsx    # Balance display
-│   │   │   ├── TransactionList.tsx  # Transaction history
-│   │   │   └── CreateUsername.tsx   # Username registration
-│   │   └── ui/                      # Shared UI components
-│   ├── hooks/
-│   │   ├── useAuth.ts               # Privy + StarkZap wallet management
-│   │   ├── usePaymentFlow.ts        # Payment state machine
-│   │   └── useStore.ts              # Zustand stores
-│   ├── lib/
-│   │   ├── address.ts               # Address normalization utilities
-│   │   ├── registry.ts              # Cairo contract interaction
-│   │   └── transactions.ts          # Server API helpers
-│   ├── pages/
-│   │   ├── LandingPage.tsx
-│   │   ├── DashboardPage.tsx
-│   │   ├── PaymentPage.tsx
-│   │   └── LoginPage.tsx
-│   └── App.tsx
-├── server/
-│   └── index.js                     # Express backend
+├── apps/
+│   ├── web/                          # React frontend (deployed to Vercel)
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   │   ├── paylink/
+│   │   │   │   │   ├── PaymentCard.tsx       # Core payment UI + state machine
+│   │   │   │   │   ├── ProfileHeader.tsx     # Payment page header + avatar
+│   │   │   │   │   ├── DashboardCard.tsx     # Live USDC balance display
+│   │   │   │   │   ├── TransactionList.tsx   # Sent + received history
+│   │   │   │   │   ├── CreateUsername.tsx    # On-chain username registration
+│   │   │   │   │   ├── WithdrawModal.tsx     # Bank withdrawal UI
+│   │   │   │   │   └── WithdrawToAddressModal.tsx  # Wallet-to-wallet transfer
+│   │   │   │   └── ui/                       # Shared design system components
+│   │   │   │       ├── Button.tsx
+│   │   │   │       ├── Card.tsx
+│   │   │   │       ├── Modal.tsx
+│   │   │   │       ├── Toast.tsx
+│   │   │   │       ├── Navbar.tsx
+│   │   │   │       ├── Footer.tsx
+│   │   │   │       ├── AuthModal.tsx
+│   │   │   │       └── Section.tsx
+│   │   │   ├── hooks/
+│   │   │   │   ├── useAuth.ts                # Privy + StarkZap wallet management
+│   │   │   │   ├── usePaymentFlow.ts         # Payment state machine
+│   │   │   │   ├── useStore.ts               # Zustand stores (auth, payment, UI)
+│   │   │   │   └── useUnifiedTransactions.ts # Merge local + server transactions
+│   │   │   ├── lib/
+│   │   │   │   ├── address.ts                # Address normalization utilities
+│   │   │   │   ├── registry.ts               # Cairo contract interaction
+│   │   │   │   ├── transactions.ts           # Server API helpers
+│   │   │   │   ├── withdraw.ts               # On-chain withdrawal logic
+│   │   │   │   └── moonpay.ts                # MoonPay onramp integration
+│   │   │   ├── pages/
+│   │   │   │   ├── LandingPage.tsx           # Homepage + product explainer
+│   │   │   │   ├── LoginPage.tsx             # Creator login/signup
+│   │   │   │   ├── DashboardPage.tsx         # Creator dashboard (protected)
+│   │   │   │   ├── PaymentPage.tsx           # Public payment page /:username
+│   │   │   │   ├── Terms.tsx
+│   │   │   │   ├── Privacy.tsx
+│   │   │   │   └── Support.tsx
+│   │   │   ├── types/
+│   │   │   │   └── payment.ts                # PaymentStep, Transaction types
+│   │   │   ├── abis/
+│   │   │   │   └── contractAbi.ts            # UsernameRegistry ABI
+│   │   │   └── App.tsx                       # Router + Privy provider
+│   │   ├── public/
+│   │   ├── index.html
+│   │   ├── vite.config.ts
+│   │   ├── tsconfig.json
+│   │   ├── tailwind.config.ts
+│   │   ├── postcss.config.js
+│   │   ├── package.json
+│   │   └── vercel.json                       # SPA routing config
+│   │
+│   └── server/                       # Express backend (deployed to Railway)
+│       ├── index.js                   # Main server — wallet, transactions, funding
+│       ├── transactions.json          # Persisted transaction store (gitignored)
+│       ├── registry.json              # Username → address cache (gitignored)
+│       └── package.json
+│
 ├── packages/
-│   └── paylink-sdk/                 # Publishable SDK
-├── package.json
-└── .env.example
+│   └── paylink-sdk/                  # Published to npm as paylink-sdk
+│       ├── src/
+│       │   ├── components/
+│       │   │   ├── PaymentCard.tsx
+│       │   │   ├── ProfileHeader.tsx
+│       │   │   └── PayLinkProvider.tsx
+│       │   ├── hooks/
+│       │   │   ├── useAuth.ts
+│       │   │   └── usePaymentFlow.ts
+│       │   ├── lib/
+│       │   │   ├── address.ts
+│       │   │   ├── registry.ts
+│       │   │   └── moonpay.ts
+│       │   └── index.ts              # Public exports
+│       ├── dist/                     # Built output (gitignored)
+│       ├── package.json
+│       └── tsconfig.json
+│
+├── contracts/                        # Cairo smart contracts
+│   └── UsernameRegistry/
+│       └── src/
+│           └── lib.cairo             # register_name, resolve_name, reverse_resolve
+│
+├── pnpm-workspace.yaml
+├── package.json                      # Monorepo root
+├── pnpm-lock.yaml
+├── .env                              # Gitignored
+├── .env.example
+├── .gitignore
+├── railway.json
+└── README.md
 
 ---
 

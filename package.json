@@ -3,9 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "workspaces": [
-  "apps/*",
-  "packages/*"
-],
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "pnpm --filter paylink-web dev",
     "build": "pnpm --filter paylink-web build",
@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
   }
 }

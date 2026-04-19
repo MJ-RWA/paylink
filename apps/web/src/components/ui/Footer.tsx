@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Wallet, Twitter, Github, Mail } from 'lucide-react';
+import { Wallet, Github, Mail } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -16,9 +16,7 @@ export default function Footer() {
             The simplest way to get paid in crypto. No wallets, no seed phrases, just a link.
           </p>
           <div className="flex items-center space-x-4">
-            <a href="#" className="p-2 bg-white rounded-lg border border-gray-100 text-gray-400 hover:text-teal-600 hover:border-teal-100 transition-all">
-              <Twitter className="w-5 h-5" />
-            </a>
+          
             <a href="https://github.com/MJ-RWA/paylink" className="p-2 bg-white rounded-lg border border-gray-100 text-gray-400 hover:text-teal-600 hover:border-teal-100 transition-all">
               <Github className="w-5 h-5" />
             </a>
