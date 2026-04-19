@@ -55,7 +55,7 @@ export default function DashboardCard({ isAdvancedMode }: DashboardCardProps) {
   const { user: localUser } = useAuthStore();
 
   const handleShare = () => {
-    const link = `paylink.app/${localUser?.username}`;
+    const link = `paylink001.vercel.app/${localUser?.username}`;
     navigator.clipboard.writeText(link);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);

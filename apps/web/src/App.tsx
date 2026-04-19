@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { 
   LandingPage, 
@@ -44,6 +45,7 @@ function StarknetProvider({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <StarknetProvider>
+      <Analytics />
       <Router>
         <ScrollToTop />
         <Routes>

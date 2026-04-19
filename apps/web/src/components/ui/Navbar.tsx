@@ -20,8 +20,8 @@ export default function Navbar() {
         </Link>
         
         <div className="hidden md:flex items-center space-x-8">
-          <Link to="/#features" className="text-sm font-semibold text-gray-600 hover:text-teal-600 transition-colors">Features</Link>
-          <Link to="/#how-it-works" className="text-sm font-semibold text-gray-600 hover:text-teal-600 transition-colors">How it works</Link>
+          <Link to="/features" className="text-sm font-semibold text-gray-600 hover:text-teal-600 transition-colors">Features</Link>
+          <Link to="/how-it-works" className="text-sm font-semibold text-gray-600 hover:text-teal-600 transition-colors">How it works</Link>
           <Link to="/support" className="text-sm font-semibold text-gray-600 hover:text-teal-600 transition-colors">Support</Link>
         </div>
 

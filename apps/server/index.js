@@ -22,7 +22,7 @@ const TX_FILE = join(__dirname, 'transactions.json');
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:3000'] }));
+app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:3000', 'https://paylink001.vercel.app',] }));
 
 const PRIVY_APP_ID = process.env.VITE_PRIVY_APP_ID;
 const PRIVY_SECRET = process.env.PRIVY_SECRET_KEY;
