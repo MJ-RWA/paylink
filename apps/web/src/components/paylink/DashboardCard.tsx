@@ -96,7 +96,7 @@ export default function DashboardCard({ isAdvancedMode }: DashboardCardProps) {
       </Card>
       <Toast 
         isVisible={showToast} 
-        message={`Copied: paylink.app/${localUser?.username}`} 
+        message={`Copied: paylink001.vercel.app/${localUser?.username}`} 
       />
     </>
   );

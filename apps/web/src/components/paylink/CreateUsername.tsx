@@ -185,7 +185,7 @@ useEffect(() => {
                 <div className="space-y-4">
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold select-none">
-                      paylink.app/
+                      paylink001.vercel.app/
                     </div>
                     <input
                       type="text"
@@ -245,7 +245,7 @@ useEffect(() => {
                       Preview
                     </p>
                     <p className="text-sm font-bold text-gray-700 break-all">
-                      paylink.app/
+                      paylink001.vercel.app/
                       <span className="text-teal-600">
                         {username || 'yourname'}
                       </span>
