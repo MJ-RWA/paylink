@@ -22,16 +22,27 @@ const TX_FILE = join(__dirname, 'transactions.json');
 
 const app = express();
 app.use(express.json());
-app.use(cors({ 
-  origin: [
-    'http://localhost:5173', 
-    'http://localhost:3000', 
-    'https://paylink001.vercel.app',
-    'https://www.paylink001.vercel.app'
-  ],
-  methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// TEMPORARY — replace your cors config with this
+app.use(cors());
+// app.use(cors({ 
+//   origin: function (origin, callback) {
+//     const allowedOrigins = [
+//       'http://localhost:5173', 
+//       'http://localhost:3000', 
+//       'https://paylink001.vercel.app',
+//       'https://www.paylink001.vercel.app'
+//     ];
+  
+//     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   credentials: true 
+// }));
 
 const PRIVY_APP_ID = process.env.VITE_PRIVY_APP_ID;
 const PRIVY_SECRET = process.env.PRIVY_SECRET_KEY;
