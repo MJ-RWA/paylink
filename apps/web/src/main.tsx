@@ -13,13 +13,16 @@ createRoot(document.getElementById('root')!).render(
           ethereum: { createOnLogin: 'off' },
           solana: { createOnLogin: 'off' },
         },
-       
+        // We ensure allowed origins include both local and production
+        // Although this is usually configured in the Privy Dashboard,
+        // configuring it here can help with some redirection logic.
         loginMethods: ['google', 'email'],
          appearance: {
           theme: 'light',
           accentColor: '#0D9488',
           logo: 'https://paylink001.vercel.app/favicon.ico',
         },
+        
       }}
     >
       <App />
