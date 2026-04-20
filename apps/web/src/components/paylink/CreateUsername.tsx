@@ -185,7 +185,7 @@ useEffect(() => {
                 <div className="space-y-4">
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold select-none">
-                      paylink001.vercel.app/
+                      paylink.app/
                     </div>
                     <input
                       type="text"
