@@ -7,7 +7,8 @@ import {
   SupportPage, 
   LoginPage, 
   DashboardPage, 
-  PaymentPage 
+  PaymentPage,
+  AuthCallbackPage
 } from './pages';
 import ProtectedRoute from './components/ProtectedRoute';
 import { StarknetConfig, jsonRpcProvider, argent, braavos, useInjectedConnectors } from "@starknet-react/core";
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/demo" element={<Demo />} />
           <Route path="/features" element={<Features />} />
           <Route path='HowItWorks' element={<HowItWorks />} />

@@ -62,6 +62,7 @@ export default function PaymentPage() {
 }, [unifiedTransactions, walletAddress]);
 
   return (
+    <>
     <div className="min-h-screen bg-[#F8F9FB] font-sans text-gray-900">
       <Navbar />
       
@@ -217,5 +218,6 @@ export default function PaymentPage() {
       </Section>
       <Footer />
     </div>
+    </>
   );
-}
+};

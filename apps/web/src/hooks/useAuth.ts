@@ -42,7 +42,7 @@ export function useAuth() {
   
   if (!token) {
     console.warn('[onboard] No token yet, skipping...');
-    throw new Error('AUTH_NOT_READY'); // 👈 important distinction
+    throw new Error('AUTH_NOT_READY'); //  important distinction
   }
 
   // STEP 1: Get private key ONLY
@@ -50,7 +50,7 @@ export function useAuth() {
   const response = await fetch(`${SERVER_URL}/api/wallet/get-or-create`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }), // ✅ ONLY TOKEN HERE
+    body: JSON.stringify({ token }),
   });
 
   if (!response.ok) {
@@ -124,13 +124,21 @@ export function useAuth() {
     run();
   }, [ready, authenticated, onboardWithSigner]);
 
-  const login = async () => {
+
+
+  type LoginOptions = {
+    redirectUrl?: string;
+    loginMethods?: ('google' | 'email')[];
+  };
+
+  const login = async (options?: LoginOptions) => {
     setIsLoading(true);
     setError(null);
 
     try {
       if (!authenticated) {
-        await privyLogin();
+        await privyLogin(options);
+
         setIsLoading(false);
         return null;
       }

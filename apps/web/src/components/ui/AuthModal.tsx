@@ -27,13 +27,23 @@ export default function AuthModal({
     setIsLoading(true);
     setError(null);
     try {
-     const result = await login();
-     if (result?.address) {
-     onSuccess?.();
-     onClose();
-     } else {
-     setError("Could not create your secure wallet. Please try again.");
-    } 
+      const currentPath = window.location.pathname + window.location.search;
+      localStorage.setItem('redirect_after_login', currentPath);
+
+      const result = await login({
+        loginMethods: ['google'],
+        redirectUrl: `${window.location.origin}/auth/callback`,
+      });
+
+      if (result?.address) {
+        onSuccess?.();
+        onClose();
+      } else if (!result) {
+        // Privy login initiated, will redirect
+        return;
+      } else {
+        setError("Could not create your secure wallet. Please try again.");
+      }
     } catch (err) {
       setError("An unexpected error occurred.");
       console.error(err);

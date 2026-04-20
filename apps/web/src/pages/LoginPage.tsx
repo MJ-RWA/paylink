@@ -21,7 +21,13 @@ export default function LoginPage() {
   }, [authenticated, navigate, from]);
 
   const handleLogin = async () => {
-    await login();
+    const currentPath = from; // 'from' is already determined from location.state
+    localStorage.setItem('redirect_after_login', currentPath);
+    
+    await login({
+      loginMethods: ['google'],
+      redirectUrl: `${window.location.origin}/auth/callback`,
+    });
   };
 
   return (
