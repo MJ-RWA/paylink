@@ -8,7 +8,6 @@ import {
   LoginPage, 
   DashboardPage, 
   PaymentPage,
-  AuthCallbackPage
 } from './pages';
 import ProtectedRoute from './components/ProtectedRoute';
 import { StarknetConfig, jsonRpcProvider, argent, braavos, useInjectedConnectors } from "@starknet-react/core";
@@ -17,6 +16,7 @@ import Demo from './components/landing/Demo';
 import Features from './components/landing/Features';
 import HowItWorks from './components/landing/HowItWorks';
 import ScrollToTop from './components/ui/ScrollToTop';
+import AuthCallbackPage from './pages/AuthCallbackPage';
 
 function StarknetProvider({ children }: { children: React.ReactNode }) {
   const { connectors } = useInjectedConnectors({
