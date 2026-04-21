@@ -12,7 +12,9 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/dashboard';
+  const fromPath = location.state?.from?.pathname || '/';
+  const fromSearch = location.state?.from?.search || '';
+  const from = fromPath + fromSearch;
 
   useEffect(() => {
     if (authenticated) {
@@ -21,12 +23,11 @@ export default function LoginPage() {
   }, [authenticated, navigate, from]);
 
   const handleLogin = async () => {
-    const currentPath = from; // 'from' is already determined from location.state
-    localStorage.setItem('redirect_after_login', currentPath);
+    const currentPath = from; // 'from' is already determined from location.state and includes search
+    localStorage.setItem('paylink_redirect_after_login', currentPath);
     
     await login({
       loginMethods: ['google'],
-      redirectUrl: `${window.location.origin}/auth/callback`,
     });
   };
 

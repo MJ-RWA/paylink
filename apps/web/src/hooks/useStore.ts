@@ -152,13 +152,21 @@ export const usePaymentStore = create<PaymentState>()(
   )
 );
 
-export const useUIStore = create<UIState>((set) => ({
-  view: 'sender',
-  isAdvancedMode: false,
-  activeModal: null,
-  pendingAction: null,
-  setView: (view) => set({ view }),
-  setAdvancedMode: (enabled) => set({ isAdvancedMode: enabled }),
-  setActiveModal: (modal) => set({ activeModal: modal }),
-  setPendingAction: (action) => set({ pendingAction: action }),
-}));
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      view: 'sender',
+      isAdvancedMode: false,
+      activeModal: null,
+      pendingAction: null,
+      setView: (view) => set({ view }),
+      setAdvancedMode: (enabled) => set({ isAdvancedMode: enabled }),
+      setActiveModal: (modal) => set({ activeModal: modal }),
+      setPendingAction: (action) => set({ pendingAction: action }),
+    }),
+    {
+      name: 'paylink_ui_storage',
+      partialize: (state) => ({ pendingAction: state.pendingAction }),
+    }
+  )
+);

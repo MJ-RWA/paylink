@@ -12,12 +12,12 @@ interface AuthModalProps {
   subtitle?: string;
 }
 
-export default function AuthModal({ 
-  isOpen, 
-  onClose, 
+export default function AuthModal({
+  isOpen,
+  onClose,
   onSuccess,
-  title = "Continue to pay",
-  subtitle = "Sign in to complete your payment securely"
+  title = 'Continue to pay',
+  subtitle = 'Sign in to complete your payment securely',
 }: AuthModalProps) {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -26,27 +26,26 @@ export default function AuthModal({
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     setError(null);
-    try {
-      const currentPath = window.location.pathname + window.location.search;
-      localStorage.setItem('redirect_after_login', currentPath);
 
-      const result = await login({
-        loginMethods: ['google'],
-        redirectUrl: `${window.location.origin}/auth/callback`,
-      });
+    try {
+      // Save where the user is right now BEFORE login redirects them
+      const currentPath = window.location.pathname + window.location.search;
+      localStorage.setItem('paylink_redirect_after_login', currentPath);
+      console.log('[auth] Saved redirect path:', currentPath);
+
+
+      const result = await login();
 
       if (result?.address) {
+      
+        localStorage.removeItem('paylink_redirect_after_login');
         onSuccess?.();
         onClose();
-      } else if (!result) {
-        // Privy login initiated, will redirect
-        return;
-      } else {
-        setError("Could not create your secure wallet. Please try again.");
       }
-    } catch (err) {
-      setError("An unexpected error occurred.");
-      console.error(err);
+    
+    } catch (err: any) {
+      console.error('[auth] Login error:', err);
+      setError('Sign in failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -55,13 +54,11 @@ export default function AuthModal({
   return (
     <Modal title={title} isOpen={isOpen} onClose={onClose}>
       <div className="space-y-6 text-center">
-        <div className="space-y-2">
-          <p className="text-sm text-gray-500">{subtitle}</p>
-        </div>
+        <p className="text-sm text-gray-500">{subtitle}</p>
 
         <div className="py-4">
-          <Button 
-            onClick={handleGoogleLogin} 
+          <Button
+            onClick={handleGoogleLogin}
             isLoading={isLoading}
             className="flex items-center justify-center space-x-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm"
           >
@@ -80,7 +77,7 @@ export default function AuthModal({
             <span>Secure • No wallet needed • Fast</span>
           </div>
           <p className="text-[10px] text-gray-400 leading-relaxed">
-            By continuing, you agree to our Terms of Service and Privacy Policy. 
+            By continuing, you agree to our Terms of Service and Privacy Policy.
             PayLink uses Starknet to secure your transactions silently.
           </p>
         </div>

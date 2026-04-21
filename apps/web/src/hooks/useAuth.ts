@@ -78,7 +78,7 @@ export function useAuth() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       token,
-      address: connectedWallet.address, // ✅ THIS FIXES EVERYTHING
+      address: connectedWallet.address, 
     }),
   });
 
@@ -126,57 +126,53 @@ export function useAuth() {
 
 
 
-  type LoginOptions = {
-    redirectUrl?: string;
-    loginMethods?: ('google' | 'email')[];
-  };
 
-  const login = async (options?: LoginOptions) => {
-    setIsLoading(true);
-    setError(null);
 
-    try {
-      if (!authenticated) {
-        await privyLogin(options);
+  const login = async (options?: { loginMethods?: ('google' | 'email')[] }) => {
+  setIsLoading(true);
+  setError(null);
 
-        setIsLoading(false);
-        return null;
-      }
-      
-      if (sharedWallet) {
-        const { setWalletAddress } = usePaymentStore.getState();
-        setWalletAddress(sharedWallet.address);
-        
-        setIsLoading(false);
-        return {
-          address: sharedWallet.address,
-          walletInstance: sharedWallet,
-        };
-      }
-
-      isOnboarding = false;
-      const connectedWallet = await onboardWithSigner();
-      sharedWallet = connectedWallet;
-      sharedAddress = connectedWallet.address;
-      setWallet(connectedWallet);
-      setStarknetAddress(connectedWallet.address);
-      const { setWalletAddress } = usePaymentStore.getState();
-      setWalletAddress(connectedWallet.address);
-
-      return {
-        address: connectedWallet.address,
-        walletInstance: connectedWallet,
-      };
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed';
-      setError(message);
-      console.error('[login] Error:', err);
-      return null;
-    } finally {
+  try {
+    if (!authenticated) {
+      // Pass loginMethods only — no redirectUrl
+      await privyLogin(options);
       setIsLoading(false);
+      return null;
     }
-  };
+
+    if (sharedWallet) {
+      const { setWalletAddress } = usePaymentStore.getState();
+      setWalletAddress(sharedWallet.address);
+      setIsLoading(false);
+      return {
+        address: sharedWallet.address,
+        walletInstance: sharedWallet,
+      };
+    }
+
+    isOnboarding = false;
+    const connectedWallet = await onboardWithSigner();
+    sharedWallet = connectedWallet;
+    sharedAddress = connectedWallet.address;
+    setWallet(connectedWallet);
+    setStarknetAddress(connectedWallet.address);
+    const { setWalletAddress } = usePaymentStore.getState();
+    setWalletAddress(connectedWallet.address);
+
+    return {
+      address: connectedWallet.address,
+      walletInstance: connectedWallet,
+    };
+
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Login failed';
+    setError(message);
+    console.error('[login] Error:', err);
+    return null;
+  } finally {
+    setIsLoading(false);
+  }
+};    
 
   const logout = async () => {
     await privyLogout();

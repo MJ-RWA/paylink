@@ -96,9 +96,13 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
                       @{localUser?.username}
                     </p>
                   )}
-                  <p className="text-xs text-gray-400 truncate font-medium">
-                    {user.email}
-                  </p>
+                 <p className="text-xs text-gray-400 truncate font-medium">
+                 {typeof user.email === 'string'
+                    ? user.email
+                    : localUser?.username
+                    ? `@${localUser.username}`
+                    : 'Email Verified'}
+                 </p>
                 </div>
               </div>
             </div>
