@@ -10,9 +10,9 @@ const STRK = sepoliaTokens.STRK;
 const USDC = sepoliaTokens.USDC;
 
 function openMoonPay(walletAddress: string) {
-  const apiKey = import.meta.env.VITE_MOONPAY_API_KEY;
+  const apiKey = import.meta.env.VITE_MOONPAY_PUBLISHABLE_KEY;
   if (!apiKey) {
-    console.warn('[moonpay] VITE_MOONPAY_API_KEY not set in .env');
+    console.warn('[moonpay] VITE_MOONPAY_PUBLISHABLE_KEY not set in .env');
     return;
   }
   const params = new URLSearchParams({
